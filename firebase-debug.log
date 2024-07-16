@@ -1,0 +1,18 @@
+[debug] [2024-07-16T23:18:00.777Z] ----------------------------------------------------------------------
+[debug] [2024-07-16T23:18:00.779Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\forin\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js use --add
+[debug] [2024-07-16T23:18:00.780Z] CLI Version:   13.13.3
+[debug] [2024-07-16T23:18:00.780Z] Platform:      win32
+[debug] [2024-07-16T23:18:00.780Z] Node Version:  v20.15.1
+[debug] [2024-07-16T23:18:00.780Z] Time:          Wed Jul 17 2024 08:18:00 GMT+0900 (대한민국 표준시)
+[debug] [2024-07-16T23:18:00.780Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-07-16T23:18:00.841Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-07-16T23:18:00.842Z] > authorizing via signed-in user (forinnocen@gmail.com)
+[debug] [2024-07-16T23:18:00.843Z] > refreshing access token with scopes: []
+[debug] [2024-07-16T23:18:00.845Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2024-07-16T23:18:00.845Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-07-16T23:18:01.225Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2024-07-16T23:18:01.225Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-07-16T23:18:01.304Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=1000
+[debug] [2024-07-16T23:18:02.133Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects 200
+[debug] [2024-07-16T23:18:02.133Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects [omitted]
