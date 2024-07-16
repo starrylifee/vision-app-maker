@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "vision-app-maker"
-  }
+    "default": "vision-app-maker",
+    "production": "vision-app-maker"
+  },
+  "targets": {},
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
 }
