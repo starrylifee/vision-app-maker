@@ -12,12 +12,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3  # 최신 버전 사용
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3  # 최신 버전 사용
         with:
-          node-version: '18'  # Node.js 버전을 18로 설정합니다.
+          node-version: '20'  # 최신 Node.js 버전 설정
 
       - name: Install dependencies
         run: npm install
