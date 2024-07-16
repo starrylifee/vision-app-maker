@@ -1,0 +1,12 @@
+{
+    "name": "vision-app-maker",
+    "version": "1.0.0",
+    "scripts": {
+      "build": "echo 'Building the project...' && mkdir -p public && cp index.html public/",
+      "start": "echo 'Starting the project...' && npm run build && firebase serve"
+    },
+    "dependencies": {
+      "firebase-tools": "^11.14.2"
+    }
+  }
+  
