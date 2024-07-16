@@ -17,19 +17,24 @@
         document.getElementById('promptForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const prompt = document.getElementById('prompt').value;
-            const response = await fetch('/create-app', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ prompt })
-            });
-            const data = await response.json();
-            if (data.url) {
-                alert(`앱이 생성되었습니다: ${data.url}`);
-                document.getElementById('result').innerHTML = `앱이 생성되었습니다: <a href="${data.url}" target="_blank">${data.url}</a>`;
-            } else {
-                alert('앱 생성 중 오류가 발생했습니다.');
+            try {
+                const response = await fetch('/create-app', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+                const data = await response.json();
+                if (data.url) {
+                    alert(`앱이 생성되었습니다: ${data.url}`);
+                    document.getElementById('result').innerHTML = `앱이 생성되었습니다: <a href="${data.url}" target="_blank">${data.url}</a>`;
+                } else {
+                    alert('앱 생성 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('요청 중 오류가 발생했습니다.');
             }
         });
     </script>
