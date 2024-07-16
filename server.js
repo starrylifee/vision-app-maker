@@ -56,7 +56,7 @@ app.post('/create-app', (req, res) => {
     exec('firebase deploy --only hosting', (err, stdout, stderr) => {
         if (err) {
             console.error(`Error during deployment: ${stderr}`);
-            res.status(500).json({ error: '배포 중 오류가 발생했습니다.' }); // JSON 응답으로 수정
+            res.status(500).json({ error: '배포 중 오류가 발생했습니다.' });
             return;
         }
         console.log(`Deployment successful: ${stdout}`);
@@ -67,7 +67,7 @@ app.post('/create-app', (req, res) => {
         if (deployedUrl) {
             res.json({ url: deployedUrl });
         } else {
-            res.status(500).json({ error: '배포 URL을 찾을 수 없습니다.' }); // JSON 응답으로 수정
+            res.status(500).json({ error: '배포 URL을 찾을 수 없습니다.' });
         }
     });
 });
@@ -95,8 +95,8 @@ app.post('/analyze', upload.single('image'), async (req, res) => {
         res.json({ analysis: response.data.choices[0].text });
         fs.unlinkSync(imagePath);
     } catch (error) {
-        console.error('Error analyzing image:', error);
-        res.status(500).json({ error: '이미지 분석 중 오류가 발생했습니다.' }); // JSON 응답으로 수정
+        console.error('Error analyzing image:', error); // 로그 추가
+        res.status(500).json({ error: '이미지 분석 중 오류가 발생했습니다.' });
     }
 });
 
