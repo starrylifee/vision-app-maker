@@ -1,5 +1,6 @@
 name: Deploy to Firebase Hosting
 
+# 워크플로우를 트리거할 이벤트 정의
 on:
   push:
     branches:
@@ -16,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18'  # Node.js 버전 18로 설정합니다.
+          node-version: '18'  # Node.js 버전을 18로 설정합니다.
 
       - name: Install dependencies
         run: npm install
