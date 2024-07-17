@@ -14,7 +14,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 app.post('/create-app', (req, res) => {
     const prompt = req.body.prompt;
-    console.log(`Received prompt: ${prompt}`); // 로그 추가
+    console.log(`Received prompt: ${prompt}`);
 
     const htmlContent = `
     <!DOCTYPE html>
