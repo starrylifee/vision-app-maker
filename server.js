@@ -5,6 +5,8 @@ const { exec } = require('child_process');
 const multer = require('multer');
 const OpenAI = require('openai');
 const cors = require('cors');
+const axios = require('axios');
+const { GoogleAuth } = require('google-auth-library');
 require('dotenv').config();
 
 const app = express();
@@ -29,7 +31,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.post('/create-app', (req, res) => {
+app.post('/create-app', async (req, res) => {
   const prompt = req.body.prompt;
   console.log(`Received prompt: ${prompt}`);
 
@@ -155,39 +157,59 @@ app.post('/create-app', (req, res) => {
     fs.writeFileSync(path.join(__dirname, 'public', 'student.html'), htmlContent);
     console.log('HTML content written to public/student.html');
   } catch (error) {
-    console.error('Error writing HTML content:', error);
+    console.error('Error writing HTML content:', error.message);
     res.status(500).json({ error: 'Error writing HTML content', details: error.message });
     return;
   }
 
   console.log('Deploying to Firebase...');
-  exec('firebase deploy --only hosting --json', (err, stdout, stderr) => {
+  exec('firebase deploy --only hosting --json', async (err, stdout, stderr) => {
     if (err) {
       console.error(`Error during deployment: ${stderr}`);
       res.status(500).json({ error: '배포 중 오류가 발생했습니다.', details: stderr });
       return;
     }
-    
+
     try {
       const outputJson = JSON.parse(stdout);
-      const deployedUrl = outputJson.result?.hosting?.[Object.keys(outputJson.result.hosting)[0]]?.url;
+      const versionPath = outputJson.result?.hosting;
 
-      if (deployedUrl) {
-        console.log(`Deployed URL: ${deployedUrl}`);
-        res.json({ url: deployedUrl });
-      } else {
-        console.error('Deployed URL not found in the Firebase CLI JSON output:', outputJson);
-        // JSON 파싱에 실패하면 예비 방식으로 URL 추출 시도
-        const deployedUrlFallback = stdout.split('Hosting URL: ')[1]?.split('\n')[0]?.trim();
-        if (deployedUrlFallback) {
-          console.log(`Deployed URL (fallback): ${deployedUrlFallback}`);
-          res.json({ url: deployedUrlFallback });
-        } else {
-          res.status(500).json({ error: '배포 URL을 찾을 수 없습니다.' });
+      if (versionPath) {
+        const actualVersionName = versionPath.split('/').pop();
+        const projectId = 'vision-app-maker';
+        const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectId}/sites/vision-app-maker/versions/${actualVersionName}`;
+
+        async function getAccessToken() {
+          const auth = new GoogleAuth({
+            keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+            scopes: ['https://www.googleapis.com/auth/firebase.hosting']
+          });
+          const client = await auth.getClient();
+          const accessToken = await client.getAccessToken();
+          return accessToken.token;
         }
+
+        const accessToken = await getAccessToken();
+
+        try {
+          const response = await axios.get(apiUrl, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          });
+
+          const deployedUrl = response.data.config.previewUrl;
+          console.log(`Deployed URL: ${deployedUrl}`);
+          res.json({ url: deployedUrl });
+        } catch (error) {
+          console.error('Error fetching deployed URL:', error.message);
+          res.status(500).json({ error: '배포 URL을 가져오는 중 오류가 발생했습니다.' });
+        }
+      } else {
+        res.status(500).json({ error: '배포 URL을 찾을 수 없습니다.' });
       }
     } catch (parseError) {
-      console.error('Error parsing Firebase CLI JSON output:', parseError);
+      console.error('Error parsing Firebase CLI output:', parseError.message);
       res.status(500).json({ error: 'Firebase CLI 출력 분석 중 오류가 발생했습니다.' });
     }
   });
@@ -204,7 +226,7 @@ app.post('/analyze', upload.single('image'), async (req, res) => {
     const analysis = await openai.createImageAnalysis({ image: fs.createReadStream(image.path) });
     res.json({ analysis });
   } catch (error) {
-    console.error('Error analyzing image:', error);
+    console.error('Error analyzing image:', error.message);
     res.status(500).json({ error: 'Error analyzing image', details: error.message });
   } finally {
     fs.unlinkSync(image.path);
