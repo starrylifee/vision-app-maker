@@ -14,7 +14,10 @@ const upload = multer({ dest: 'uploads/' });
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-app.post('/create-app', (req, res) => {
+app.post('/create-app', (req, res, next) => {
+    console.log('Received request to /create-app');
+    console.log('Request body:', req.body);
+
     const prompt = req.body.prompt;
     console.log(`Received prompt: ${prompt}`);
 
@@ -91,8 +94,11 @@ app.post('/create-app', (req, res) => {
     });
 });
 
-app.post('/analyze', upload.single('image'), async (req, res) => {
+app.post('/analyze', upload.single('image'), async (req, res, next) => {
     try {
+        console.log('Received request to /analyze');
+        console.log('Request body:', req.body);
+
         if (!req.file) {
             return res.status(400).json({ error: '이미지 파일이 제공되지 않았습니다.' });
         }
@@ -133,8 +139,14 @@ app.post('/analyze', upload.single('image'), async (req, res) => {
         fs.unlinkSync(imagePath);
     } catch (error) {
         console.error('Error analyzing image:', error);
-        res.status(500).json({ error: '이미지 분석 중 오류가 발생했습니다.', details: error.message });
+        next(error);
     }
+});
+
+// 전역 오류 처리 미들웨어
+app.use((err, req, res, next) => {
+    console.error('Error:', err);
+    res.status(500).json({ error: '서버 오류가 발생했습니다.', details: err.message });
 });
 
 const PORT = process.env.PORT || 3000;
