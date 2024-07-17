@@ -3,30 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 작품 분석</title>
+    <title>AI 작품 분석 생성기</title>
 </head>
 <body>
-    <h1>작품을 찍어주세요!</h1>
-    <div id="prompt">프롬프트 로드 중...</div>
-    <input type="file" accept="image/*" capture="camera" id="upload">
-    <button onclick="analyzeImage()">분석하기</button>
+    <h1>프롬프트 입력</h1>
+    <form id="promptForm">
+        <label for="prompt">프롬프트를 입력하세요:</label>
+        <input type="text" id="prompt" name="prompt" required>
+        <button type="submit">생성</button>
+    </form>
     <div id="result"></div>
     <script>
-        async function analyzeImage() {
-            const file = document.getElementById('upload').files[0];
-            const formData = new FormData();
-            formData.append('image', file);
-
-            const response = await fetch('/analyze', {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            document.getElementById('result').innerText = result.analysis;
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('prompt').innerText = "${prompt}";
+        document.getElementById('promptForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const prompt = document.getElementById('prompt').value;
+            try {
+                console.log(`Sending prompt: ${prompt}`);
+                const response = await fetch('/create-app', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+                const data = await response.json();
+                console.log(`Received response:`, data);
+                
+                if (data.url) {
+                    alert(`앱이 생성되었습니다: ${data.url}`);
+                    document.getElementById('result').innerHTML = `앱이 생성되었습니다: <a href="${data.url}" target="_blank">${data.url}</a>`;
+                } else {
+                    alert('앱 생성 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('요청 중 오류가 발생했습니다.');
+            }
         });
     </script>
 </body>
