@@ -1,34 +1,106 @@
-
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AI 작품 분석</title>
-    </head>
-    <body>
-        <h1>작품을 찍어주세요!</h1>
-        <input type="file" accept="image/*" capture="camera" id="upload">
-        <button onclick="analyzeImage()">분석하기</button>
+<!DOCTYPE html>
+<html>
+<head>
+    <base href="/">
+    <title>Vision App Maker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e8f6fd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vision App Maker</h1>
+    <div class="container">
+        <div class="input-group">
+            <label for="prompt">Enter your prompt:</label>
+            <textarea id="prompt" rows="4" placeholder="This is a drawing made during art class. Please analyze the student's artwork."></textarea>
+        </div>
+        <button onclick="generateApp()">Generate App</button>
         <div id="result"></div>
-        <script>
-            async function analyzeImage() {
-                const file = document.getElementById('upload').files[0];
-                const formData = new FormData();
-                formData.append('image', file);
+    </div>
 
-                const response = await fetch('/analyze', {
-                    method: 'POST',
-                    body: formData
-                });
-                const result = await response.json();
-                document.getElementById('result').innerText = result.analysis;
+    <script>
+        async function generateApp() {
+            const prompt = document.getElementById('prompt').value;
+            if (prompt.trim() === '') {
+                alert('Please enter a prompt');
+                return;
             }
 
-            document.addEventListener('DOMContentLoaded', () => {
-                document.getElementById('prompt').innerText = "Please give the picture a title.";
-            });
-        </script>
-    </body>
-    </html>
-    
+            document.getElementById('result').innerHTML = 'Generating and deploying app...';
+
+            try {
+                const response = await fetch('/create-app', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const result = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <p>Your app has been generated and deployed!</p>
+                    <p>URL: <a href="${result.url}" target="_blank">${result.url}</a></p>
+                    <p>Share this URL with your students to let them upload and analyze their artwork.</p>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error generating and deploying app.';
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
