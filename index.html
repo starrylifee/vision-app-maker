@@ -24,12 +24,12 @@
             console.log(`Submitting prompt: ${prompt}`);
 
             try {
-                const response = await fetch('/create-app', {
+                const response = await fetch('http://localhost:3000/create-app', { // 로컬 서버 URL 사용
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ prompt })
+                    body: JSON.stringify({ prompt: prompt })
                 });
 
                 console.log('Request sent, awaiting response...');
