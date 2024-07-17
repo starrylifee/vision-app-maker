@@ -4,11 +4,11 @@ const path = require('path');
 const { exec } = require('child_process');
 const multer = require('multer');
 const axios = require('axios');
-const cors = require('cors');  // CORS 패키지 추가
+const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());  // CORS 미들웨어 적용
+app.use(cors());
 app.use(express.json());
 const upload = multer({ dest: 'uploads/' });
 
@@ -17,6 +17,10 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 app.post('/create-app', (req, res) => {
     const prompt = req.body.prompt;
     console.log(`Received prompt: ${prompt}`);
+
+    if (!prompt) {
+        return res.status(400).json({ error: '프롬프트가 제공되지 않았습니다.' });
+    }
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -34,20 +38,29 @@ app.post('/create-app', (req, res) => {
         <script>
             async function analyzeImage() {
                 const file = document.getElementById('upload').files[0];
+                if (!file) {
+                    alert('파일을 선택해주세요.');
+                    return;
+                }
                 const formData = new FormData();
                 formData.append('image', file);
+                formData.append('prompt', "${prompt}");
 
-                const response = await fetch('/analyze', {
-                    method: 'POST',
-                    body: formData
-                });
-                const result = await response.json();
-                document.getElementById('result').innerText = result.analysis;
+                try {
+                    const response = await fetch('/analyze', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (!response.ok) {
+                        throw new Error('서버 응답 오류');
+                    }
+                    const result = await response.json();
+                    document.getElementById('result').innerText = result.analysis;
+                } catch (error) {
+                    console.error('분석 중 오류 발생:', error);
+                    alert('이미지 분석 중 오류가 발생했습니다.');
+                }
             }
-
-            document.addEventListener('DOMContentLoaded', () => {
-                document.getElementById('prompt').innerText = "${prompt}";
-            });
         </script>
     </body>
     </html>
@@ -63,8 +76,7 @@ app.post('/create-app', (req, res) => {
     exec('firebase deploy --only hosting', (err, stdout, stderr) => {
         if (err) {
             console.error(`Error during deployment: ${stderr}`);
-            res.status(500).json({ error: '배포 중 오류가 발생했습니다.' });
-            return;
+            return res.status(500).json({ error: '배포 중 오류가 발생했습니다.', details: stderr });
         }
         console.log(`Deployment successful: ${stdout}`);
         
@@ -81,16 +93,32 @@ app.post('/create-app', (req, res) => {
 
 app.post('/analyze', upload.single('image'), async (req, res) => {
     try {
+        if (!req.file) {
+            return res.status(400).json({ error: '이미지 파일이 제공되지 않았습니다.' });
+        }
+
         const imagePath = req.file.path;
         const imageBase64 = fs.readFileSync(imagePath, { encoding: 'base64' });
 
+        if (!OPENAI_API_KEY) {
+            throw new Error('OpenAI API 키가 설정되지 않았습니다.');
+        }
+
         console.log('Sending image to OpenAI API...');
         const response = await axios.post(
-            'https://api.openai.com/v1/images/analyze',
+            'https://api.openai.com/v1/chat/completions',
             {
-                prompt: `미술시간에 그린 그림입니다. 학생의 작품을 분석해주세요: ${req.body.prompt}`,
-                image: imageBase64,
-                model: 'gpt-4-vision'
+                model: "gpt-4-vision-preview",
+                messages: [
+                    {
+                        role: "user",
+                        content: [
+                            { type: "text", text: `미술시간에 그린 그림입니다. 학생의 작품을 분석해주세요: ${req.body.prompt}` },
+                            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageBase64}` } }
+                        ]
+                    }
+                ],
+                max_tokens: 300
             },
             {
                 headers: {
@@ -101,11 +129,11 @@ app.post('/analyze', upload.single('image'), async (req, res) => {
         );
 
         console.log('Received response from OpenAI API');
-        res.json({ analysis: response.data.choices[0].text });
+        res.json({ analysis: response.data.choices[0].message.content });
         fs.unlinkSync(imagePath);
     } catch (error) {
         console.error('Error analyzing image:', error);
-        res.status(500).json({ error: '이미지 분석 중 오류가 발생했습니다.' });
+        res.status(500).json({ error: '이미지 분석 중 오류가 발생했습니다.', details: error.message });
     }
 });
 
