@@ -42,6 +42,10 @@ app.post('/create-app', (req, res) => {
                 const result = await response.json();
                 document.getElementById('result').innerText = result.analysis;
             }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('prompt').innerText = "${prompt}";
+            });
         </script>
     </body>
     </html>
@@ -95,7 +99,7 @@ app.post('/analyze', upload.single('image'), async (req, res) => {
         res.json({ analysis: response.data.choices[0].text });
         fs.unlinkSync(imagePath);
     } catch (error) {
-        console.error('Error analyzing image:', error); // 로그 추가
+        console.error('Error analyzing image:', error);
         res.status(500).json({ error: '이미지 분석 중 오류가 발생했습니다.' });
     }
 });
