@@ -57,6 +57,7 @@ app.post('/create-app', (req, res) => {
     }
     fs.writeFileSync(path.join(publicDir, 'index.html'), htmlContent);
 
+    console.log('Deploying to Firebase...');
     exec('firebase deploy --only hosting', (err, stdout, stderr) => {
         if (err) {
             console.error(`Error during deployment: ${stderr}`);
@@ -81,6 +82,7 @@ app.post('/analyze', upload.single('image'), async (req, res) => {
         const imagePath = req.file.path;
         const imageBase64 = fs.readFileSync(imagePath, { encoding: 'base64' });
 
+        console.log('Sending image to OpenAI API...');
         const response = await axios.post(
             'https://api.openai.com/v1/images/analyze',
             {
@@ -96,6 +98,7 @@ app.post('/analyze', upload.single('image'), async (req, res) => {
             }
         );
 
+        console.log('Received response from OpenAI API');
         res.json({ analysis: response.data.choices[0].text });
         fs.unlinkSync(imagePath);
     } catch (error) {
