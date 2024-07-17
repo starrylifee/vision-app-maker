@@ -4,9 +4,11 @@ const path = require('path');
 const { exec } = require('child_process');
 const multer = require('multer');
 const axios = require('axios');
+const cors = require('cors');  // CORS 패키지 추가
 require('dotenv').config();
 
 const app = express();
+app.use(cors());  // CORS 미들웨어 적용
 app.use(express.json());
 const upload = multer({ dest: 'uploads/' });
 
